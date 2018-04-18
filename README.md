@@ -1,3 +1,3 @@
 # gmail-selenium-tests
-Gmail selenium tests
-wprowadzam zmiane
+Tests of sending emails in Gmail platform
+using Selenium WebDriver and JUnit

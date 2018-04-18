@@ -1,26 +1,19 @@
 package mailSendingTests;
 
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import pageObjects.LoginPage;
 import pageObjects.NewMailPage;
-
-import java.util.concurrent.TimeUnit;
-
+import utilities.DriverFactory;
 
 public class SendingMailTest {
 
     private static WebDriver driver;
 
     private static String gmailLoginUrl = "http://gmail.com";
-    private String gmailHomeUrl = "https://mail.google.com/mail/#inbox";
     private String newMailUrl = "https://mail.google.com/mail/#inbox?compose=new";
 
     private static String name = "mojnowymailjhb";
@@ -30,46 +23,77 @@ public class SendingMailTest {
     private String topic = "test topic";
     private String content = "Lorem ipsum";
 
+    private String sentCommunicate = "Wiadomość została wysłana. Wyświetl wiadomość";
+    private String errorHeader = "Błąd";
+    private String errorCommunicate = "Określ co najmniej jednego adresata";
+
+    DriverFactory df = new DriverFactory();
+
 
     @Test
-    public void SendingMailTest(){
+    public void SendingMailTest() {
         driver.get(newMailUrl);
         NewMailPage newMailPage = new NewMailPage(driver);
 
-        utilities.DriverFactory.waitForElementToBeVisible(driver, newMailPage.getToField());
+        df.waitForElementToBeVisible(driver, newMailPage.getToField());
 
         newMailPage.provideAddressee(addressee);
         newMailPage.provideTopic(topic);
         newMailPage.provideContent(content);
         newMailPage.getSendButton().click();
 
-        utilities.DriverFactory.waitForElementToBeVisible(driver, newMailPage.getSentMessageToast());
+        df.waitForElementToBeVisible(driver, newMailPage.getSentMessageToast());
 
-        Assertions.assertEquals(newMailPage.getSentMessageToast(), "Wysłano nową wiadomość");
+        Assertions.assertEquals(newMailPage.getSentMessageToast().getText(), sentCommunicate);
+    }
+
+    @Test
+    public void SendingEmptyMailTest() {
+        driver.get(newMailUrl);
+        NewMailPage newMailPage = new NewMailPage(driver);
+
+        df.waitForElementToBeVisible(driver, newMailPage.getToField());
+
+        newMailPage.provideAddressee(addressee);
+        newMailPage.provideTopic(topic);
+        newMailPage.getSendButton().click();
+
+        df.waitForElementToBeVisible(driver, newMailPage.getSentMessageToast());
+
+        Assertions.assertEquals(newMailPage.getSentMessageToast().getText(), sentCommunicate);
+    }
+
+    @Test
+    public void SendingMailWithoutAddressee() {
+        driver.get(newMailUrl);
+        NewMailPage newMailPage = new NewMailPage(driver);
+
+        df.waitForElementToBeVisible(driver, newMailPage.getToField());
+
+        newMailPage.provideTopic(topic);
+        newMailPage.provideContent(content);
+        newMailPage.getSendButton().click();
+
+        df.waitForElementToBeVisible(driver, newMailPage.getErrorHeader());
+
+        Assertions.assertEquals(newMailPage.getErrorHeader().getText(), errorHeader);
+        Assertions.assertEquals(newMailPage.getErrorCommunicate().getText(), errorCommunicate);
     }
 
     @BeforeAll
-    public static void setUp(){
-        System.out.println("Setting up test");
+    public static void loginBefore() {
+
         driver = utilities.DriverFactory.open("chrome");
         driver.get(gmailLoginUrl);
 
         LoginPage loginPage = new LoginPage(driver);
 
-        loginPage.provideLogin(name);
-        loginPage.getLoginNextButton().click();
-
-        utilities.DriverFactory.waitForElementToBeVisible(driver, loginPage.getPassword());
-
-        loginPage.providePassword(password);
-        loginPage.getPasswordNextButton().click();
-
-        new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("a[title='Odebrane']")));
+        loginPage.loginToTheSystem(name, password);
 
     }
 
     @AfterAll
-    public static void tearDown(){
+    public static void tearDown() {
         System.out.println("Its after our test");
         driver.close();
     }

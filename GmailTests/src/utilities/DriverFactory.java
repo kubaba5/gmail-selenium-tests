@@ -9,13 +9,12 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class DriverFactory {
 
 
-
-    public static WebDriver open(String browser){
-            System.setProperty("webdriver.chrome.driver", "chromedriver");
-            return new ChromeDriver();
+    public static WebDriver open(String browser) {
+        System.setProperty("webdriver.chrome.driver", "chromedriver");
+        return new ChromeDriver();
     }
 
-    public static void waitForElementToBeVisible(WebDriver driver, WebElement element){
+    public static void waitForElementToBeVisible(WebDriver driver, WebElement element) {
         new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(element));
     }
 }
